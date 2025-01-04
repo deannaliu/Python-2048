@@ -17,7 +17,7 @@ OUTLINE_THICKNESS = 8
 BACKGROUND_COLOR = (205, 192, 180)
 FONT_COLOR = (119, 110, 101)
 FONT = pygame.font.SysFont("calibri", 60, bold = True)
-MOVE_SPEED = 30
+MOVE_SPEED = 20
 
 # pygame has a window
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -79,10 +79,16 @@ class Tile:
                     self.y + (TILE_HEIGHT / 2 - text.get_height() / 2))) # this is how you put a surface on a screen
 
     def move(self, delta):
-        pass
+        self.x += delta[0]
+        self.y += delta[1]
 
-    def set_position(self):
-        pass
+    def set_position(self, ceil=False):
+        if ceil: 
+            self.row = math.ceil(self.y / TILE_HEIGHT)
+            self.col = math.ceil(self.x / TILE_WIDTH)
+        else:
+            self.row = self.y / TILE_HEIGHT
+            self.col = self.x / TILE_WIDTH
 
 # helper method to look for a random EMPTY space
 def get_random_position(tiles):
@@ -97,6 +103,77 @@ def get_random_position(tiles):
             break
 
     return row, col
+
+def move_tiles(window, tiles, clock, direction):
+    updated = True
+    blocks = set()      # which tiles have already been merged 
+    
+    if direction == "left":
+        # move from left to right
+        sort_func = lambda x: x.col # sort the tiles by their columns using lambda
+        reverse = False             # asc or desc ording
+        delta = (-MOVE_SPEED, 0)    # reducing x moves to the left
+        bound_check = lambda tile: tile.col == 0 
+
+        # checks if there is a tile to the left
+        get_next_tile = lambda tile: tiles.get(f"{tile.row}-{tile.col - 1}") # tile to the left
+        # check if we are in the position to merge or not
+        merge_check = lambda tile, next_tile: tile.x > next_tile.x + MOVE_SPEED 
+        move_check = lambda tile, next_tile: tile.x > next_tile.x + TILE_WIDTH + MOVE_SPEED
+        ceil = True
+
+    elif direction == "right":
+        pass
+    elif direction == "up":
+        pass
+    elif direction == "down":
+        pass
+
+    while updated:
+        clock.tick(FPS)
+        updated = False
+        sorted_tiles = sorted(tiles.values(), key=sort_func, reverse=reverse)
+        for i, tile in enumerate(sorted_tiles):
+            if bound_check(tile):
+                continue 
+
+            next_tile = get_next_tile(tile)
+            if not next_tile:
+                tile.move(delta)
+            # if the two tiles together are the same and it hasnt been merged, then continue
+            elif tile.value == next_tile.value and tile not in blocks and next_tile not in blocks:
+                if merge_check(tile, next_tile):
+                    tile.move(delta)
+                else:
+                    next_tile.value *= 2
+                    sorted_tiles.pop(i)
+                    blocks.add(next_tile)
+            elif move_check(tile, next_tile):
+                tile.move(delta)
+            else:
+                continue
+
+            tile.set_position(ceil)
+            updated = True
+        
+        update_tiles(window, tiles, sorted_tiles)
+    return end_moves(tiles)
+ 
+def end_moves(tiles):
+    if len(tiles) == 16:
+        return "lost"
+    
+    row, col = get_random_position(tiles)
+    tiles["f{row}-{col}"] = Tile(random.choice([2, 4]), row, col)
+    return "continue"
+
+# helper method to update the tiles after they have been moved
+def update_tiles(window, tiles, sorted_tiles):
+    tiles.clear()
+    for tile in sorted_tiles:
+        tiles[f"{tile.row}-{tile.col}"] = tile
+    
+    draw(window, tiles)
 
 # helper method to start the game with 2 random tiles on screen
 def generate_tiles():
@@ -124,6 +201,16 @@ def main(window):
             if event.type == pygame.QUIT:
                 run = False
                 break
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    move_tiles(window, tiles, clock, "left")
+                if event.key == pygame.K_RIGHT:
+                    move_tiles(window, tiles, clock, "right")
+                if event.key == pygame.K_UP:
+                    move_tiles(window, tiles, clock, "up")
+                if event.key == pygame.K_DOWN:
+                    move_tiles(window, tiles, clock, "down")
 
         draw(WINDOW, tiles)
 
