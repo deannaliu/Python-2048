@@ -61,8 +61,8 @@ class Tile:
             self.row = math.ceil(self.y / TILE_HEIGHT)
             self.col = math.ceil(self.x / TILE_WIDTH)
         else:
-            self.row = self.y / TILE_HEIGHT
-            self.col = self.x / TILE_WIDTH
+            self.row = math.floor(self.y / TILE_HEIGHT)
+            self.col = math.floor(self.x / TILE_WIDTH)
 
     def move(self, delta):
         self.x += delta[0]
