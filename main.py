@@ -84,16 +84,39 @@ class Tile:
     def set_position(self):
         pass
 
+# helper method to look for a random EMPTY space
+def get_random_position(tiles):
+    row = None
+    col = None
+
+    while True:
+        row = random.randrange(0, ROWS)
+        col = random.randrange(0, COLUMNS)
+
+        if f"{row}-{col}" not in tiles: 
+            break
+
+    return row, col
+
+# helper method to start the game with 2 random tiles on screen
+def generate_tiles():
+    # key: row col
+    # value: tile
+    tiles = {}
+
+    for _ in range(2):
+        row, col = get_random_position(tiles)
+        tiles[f"{row}-{col}"] = Tile(2, row, col)
+
+    return tiles
+
 # game loop, event loop, runs constantly, checks for clicks 
 def main(window):
     clock = pygame.time.Clock()
     run = True
 
-    # key: row col
-    # value: tile
-    tiles = {"00": Tile(4, 0, 0), 
-             "20": Tile(128, 2, 0)}
-
+    tiles = generate_tiles()
+    
     while run:
         clock.tick(FPS) # 1 time every 60 seconds 
 
