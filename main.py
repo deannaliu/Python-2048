@@ -24,8 +24,12 @@ WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("2048")
 
 # paint / drawing events in the order of the code
-def draw(window):
+def draw(window, tiles):
     window.fill(BACKGROUND_COLOR)
+
+    for tile in tiles.values():
+        tile.draw(window) 
+
     draw_grid(window)
     pygame.display.update()
 
@@ -41,11 +45,54 @@ def draw_grid(window):
 
     pygame.draw.rect(window, OUTLINE_COLOR, (0, 0, WIDTH, HEIGHT), OUTLINE_THICKNESS)
 
+class Tile:
+    COLORS = [
+       (237, 229, 218),
+       (238, 225, 201),
+       (243, 178, 122),
+       (246, 150, 101),
+       (247, 124, 95),
+       (247, 95, 59),
+       (237, 208, 115),
+       (237, 204, 99),
+       (236, 202, 80),
+    ]
+
+    def __init__(self, value, row, col):
+        self.value = value
+        self.row = row
+        self.col = col
+        self.x = col * TILE_WIDTH
+        self.y = row * TILE_HEIGHT
+
+    def get_color(self):
+        # using log to get the index in the map to get the color of the tile based
+        color_idx = int(math.log2(self.value)) - 1
+        return self.COLORS[color_idx]
+
+    def draw(self, window):
+        color = self.get_color()
+        pygame.draw.rect(window, color, (self.x, self.y, TILE_WIDTH, TILE_HEIGHT))
+        text = FONT.render(str(self.value), 1, FONT_COLOR) # creates the surface that creates the text
+        window.blit(text, 
+                    (self.x + (TILE_WIDTH / 2 - text.get_width() / 2), 
+                    self.y + (TILE_HEIGHT / 2 - text.get_height() / 2))) # this is how you put a surface on a screen
+
+    def move(self, delta):
+        pass
+
+    def set_position(self):
+        pass
 
 # game loop, event loop, runs constantly, checks for clicks 
 def main(window):
     clock = pygame.time.Clock()
     run = True
+
+    # key: row col
+    # value: tile
+    tiles = {"00": Tile(4, 0, 0), 
+             "20": Tile(128, 2, 0)}
 
     while run:
         clock.tick(FPS) # 1 time every 60 seconds 
@@ -55,7 +102,7 @@ def main(window):
                 run = False
                 break
 
-        draw(WINDOW)
+        draw(WINDOW, tiles)
 
     pygame.quit()
 
