@@ -16,7 +16,7 @@ OUTLINE_COLOR = (187, 173, 160) # RGB (255, 255, 255)
 OUTLINE_THICKNESS = 10
 BACKGROUND_COLOR = (205, 192, 180)
 FONT_COLOR = (119, 110, 101)
-FONT = pygame.font.SysFont("calibri", 60, bold = True)
+FONT = pygame.font.SysFont("comicsans", 60, bold = True)
 MOVE_SPEED = 20
 
 # pygame has a window
@@ -68,16 +68,6 @@ class Tile:
         self.x += delta[0]
         self.y += delta[1]
 
-# paint / drawing events in the order of the code
-def draw(window, tiles):
-    window.fill(BACKGROUND_COLOR)
-
-    for tile in tiles.values():
-        tile.draw(window) 
-
-    draw_grid(window)
-    pygame.display.update()
-
 # helper method to draw the grid
 def draw_grid(window):
     for row in range(1, ROWS):
@@ -90,6 +80,15 @@ def draw_grid(window):
 
     pygame.draw.rect(window, OUTLINE_COLOR, (0, 0, WIDTH, HEIGHT), OUTLINE_THICKNESS)
 
+# paint / drawing events in the order of the code
+def draw(window, tiles):
+    window.fill(BACKGROUND_COLOR)
+
+    for tile in tiles.values():
+        tile.draw(window) 
+
+    draw_grid(window)
+    pygame.display.update()
 
 # helper method to look for a random EMPTY space
 def get_random_position(tiles):
